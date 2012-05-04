@@ -148,7 +148,7 @@ class ReadlineExtensionBuilder(build_ext):
         termcap = ''
 
         # Find a termcap library
-        if self.can_inspect_libraries() and os.environ.get('READTHEDOCS') is None:
+        if self.can_inspect_libraries():
 
             if 'readline' in ext.libraries:
                 readline = self.compiler.find_library_file(lib_dirs, 'readline')
