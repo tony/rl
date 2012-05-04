@@ -39,6 +39,10 @@ class ReadlineExtension(Extension):
         if os.environ.get('RL_BUILD_STATIC_READLINE') and self.have_curl():
             self.use_static_readline()
 
+        # Build statically on readthedocs.org
+        if os.environ.get('READTHEDOCS') and self.have_curl():
+            self.use_static_readline()
+
         # Mac OS X ships with libedit which we cannot use
         elif sys.platform == 'darwin':
             # System Python
