@@ -179,7 +179,8 @@ class ReadlineExtensionBuilder(build_ext):
         else:
             log.warn('WARNING: Failed to find a termcap library')
 
-            # Build a custom libtinfo (should only happen on readthedocs.org)
+        # Build a custom libtinfo
+        if os.environ.get('READTHEDOCS'):
             if 'readline' not in ext.libraries:
                 lib_dir = abspath(join('build', 'ncurses', 'lib'))
                 ext.library_dirs.insert(0, lib_dir)
@@ -258,7 +259,7 @@ class ReadlineExtensionBuilder(build_ext):
             curl --connect-timeout 30 -s %(tarball)s | tar zx
             mv ncurses-5.9 ncurses
             cd ncurses
-            ./configure --prefix=%(prefix)s --with-shared --with-termlib --without-debug --without-cxx --without-cxx-binding --without-ada %(stdout)s
+            ./configure --prefix=%(prefix)s --with-shared --with-pic --with-termlib %(stdout)s
             cd ncurses
             make libs %(stdout)s
             """ % locals())
