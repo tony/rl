@@ -16,6 +16,8 @@ from os.path import abspath, join, exists
 
 version = '2.3'
 
+READTHEDOCS = bool(os.environ.get('READTHEDOCS'))
+
 
 def sys_path_contains(string):
     for dir in sys.path:
@@ -40,7 +42,7 @@ class ReadlineExtension(Extension):
             self.use_static_readline()
 
         # Build statically on readthedocs.org
-        elif os.environ.get('READTHEDOCS') and self.have_curl():
+        elif READTHEDOCS and self.have_curl():
             self.use_static_readline()
 
         # Mac OS X ships with libedit which we cannot use
@@ -180,7 +182,7 @@ class ReadlineExtensionBuilder(build_ext):
             log.warn('WARNING: Failed to find a termcap library')
 
         # Build a custom libtinfo
-        if os.environ.get('READTHEDOCS'):
+        if READTHEDOCS:
             if 'readline' not in ext.libraries:
                 lib_dir = abspath(join('build', 'ncurses', 'lib'))
                 ext.library_dirs.insert(0, lib_dir)
@@ -226,7 +228,7 @@ class ReadlineExtensionBuilder(build_ext):
         if not self.distribution.verbose:
             stdout = '>%s' % os.devnull
 
-        if not exists(join('build', 'readline', 'config.h')):
+        if READTHEDOCS or not exists(join('build', 'readline', 'config.h')):
             os.system("""\
             mkdir -p build
             cd build
@@ -250,7 +252,7 @@ class ReadlineExtensionBuilder(build_ext):
         if not self.distribution.verbose:
             stdout = '>%s' % os.devnull
 
-        if not exists(join(prefix, 'lib', 'libtinfo.a')):
+        if READTHEDOCS or not exists(join(prefix, 'lib', 'libtinfo.a')):
             os.system("""\
             mkdir -p build
             cd build
