@@ -248,13 +248,9 @@ class ReadlineExtensionBuilder(build_ext):
         tarball = 'http://ftp.gnu.org/gnu/ncurses/ncurses-5.9.tar.gz'
         prefix = abspath(join('build', 'ncurses'))
         stdout = ''
-        cflags = ''
 
         if not self.distribution.verbose:
             stdout = '>%s' % os.devnull
-
-        if sys.platform.startswith('linux'):
-            cflags = 'CFLAGS=-fPIC'
 
         if READTHEDOCS or not exists(join(prefix, 'lib', 'libtinfo.a')):
             os.system("""\
@@ -267,7 +263,7 @@ class ReadlineExtensionBuilder(build_ext):
             cd ncurses
             ./configure --prefix=%(prefix)s --with-shared --with-termlib %(stdout)s
             cd ncurses
-            %(cflags)s make libs %(stdout)s
+            make libs %(stdout)s
             """ % locals())
 
 
