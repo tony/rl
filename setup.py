@@ -40,7 +40,7 @@ class ReadlineExtension(Extension):
             self.use_static_readline()
 
         # Build statically on readthedocs.org
-        if os.environ.get('READTHEDOCS') and self.have_curl():
+        elif os.environ.get('READTHEDOCS') and self.have_curl():
             self.use_static_readline()
 
         # Mac OS X ships with libedit which we cannot use
@@ -147,9 +147,10 @@ class ReadlineExtensionBuilder(build_ext):
         lib_dynload = join(sys.exec_prefix, 'lib', 'python%s' % sys.version[:3], 'lib-dynload')
         lib_dirs = ['/lib64', '/usr/lib64', '/lib', '/usr/lib', '/usr/local/lib']
         lib_dirs = ext.library_dirs + self.compiler.library_dirs + lib_dirs
-        termcap = ''
 
         # Find a termcap library
+        termcap = ''
+
         if self.can_inspect_libraries():
 
             if 'readline' in ext.libraries:
@@ -180,9 +181,11 @@ class ReadlineExtensionBuilder(build_ext):
 
             # Build a custom libtinfo (should only happen on readthedocs.org)
             if 'readline' not in ext.libraries:
-                self.build_tinfo()
-                ext.library_dirs.insert(0, 'build/ncurses/lib')
+                lib_dir = abspath(join('build', 'ncurses', 'lib'))
+                ext.library_dirs.insert(0, lib_dir)
+                ext.runtime_library_dirs.insert(0, lib_dir)
                 ext.libraries.append('tinfo')
+                self.build_tinfo()
 
         # Prepare the source tree
         if 'readline' not in ext.libraries:
