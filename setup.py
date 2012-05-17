@@ -239,7 +239,7 @@ class ReadlineExtensionBuilder(build_ext):
                 curl --connect-timeout 30 -s %(patches)s/readline62-001 | patch -p0 %(stdout)s
                 curl --connect-timeout 30 -s %(patches)s/readline62-002 | patch -p0 %(stdout)s
             fi
-            ./configure %(stdout)s
+            ./configure --with-pic %(stdout)s
             """ % locals())
 
     def build_tinfo(self):
