@@ -175,6 +175,11 @@ class ReadlineExtensionBuilder(build_ext):
         else:
             log.warn('WARNING: Failed to find a termcap library')
 
+            # Build a static libtinfo (should only happen on readthedocs.org)
+            if 'readline' not in ext.libraries:
+                ext.extra_objects.append('build/ncurses/lib/libtinfo.a')
+                self.build_static_tinfo()
+
         # Prepare the source tree
         if 'readline' not in ext.libraries:
             self.configure_static_readline()
@@ -227,6 +232,26 @@ class ReadlineExtensionBuilder(build_ext):
                 curl --connect-timeout 30 -s %(patches)s/readline62-002 | patch -p0 %(stdout)s
             fi
             ./configure %(stdout)s
+            """ % locals())
+
+    def build_static_tinfo(self):
+        tarball = 'http://ftp.gnu.org/gnu/ncurses/ncurses-5.9.tar.gz'
+        stdout = ''
+
+        if not self.distribution.verbose:
+            stdout = '>%s' % os.devnull
+
+        if not exists(join('build', 'ncurses', 'lib', 'libtinfo.a')):
+            os.system("""\
+            mkdir -p build
+            cd build
+            rm -rf ncurses-5.9 ncurses
+            echo downloading %(tarball)s %(stdout)s
+            curl --connect-timeout 30 -s %(tarball)s | tar zx
+            mv ncurses-5.9 ncurses
+            cd ncurses
+            ./configure --with-termlib --without-cxx --without-cxx-binding --without-ada %(stdout)s
+            make %(stdout)s
             """ % locals())
 
 
