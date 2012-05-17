@@ -12,7 +12,7 @@ from setuptools.command.build_ext import build_ext
 from distutils.sysconfig import get_config_vars
 from distutils.spawn import find_executable
 from distutils import log
-from os.path import join, exists
+from os.path import abspath, join, exists
 
 version = '2.3'
 
@@ -150,21 +150,22 @@ class ReadlineExtensionBuilder(build_ext):
         termcap = ''
 
         # Find a termcap library
-        if not os.environ.get('READTHEDOCS'):
+        if self.can_inspect_libraries():
 
-            if self.can_inspect_libraries():
+            if 'readline' in ext.libraries:
+                readline = self.compiler.find_library_file(lib_dirs, 'readline')
+                termcap = self.get_termcap_from(readline)
 
-                if 'readline' in ext.libraries:
-                    readline = self.compiler.find_library_file(lib_dirs, 'readline')
-                    termcap = self.get_termcap_from(readline)
+            if not termcap:
+                pyreadline = join(lib_dynload, 'readline.so')
+                termcap = self.get_termcap_from(pyreadline)
 
-                if not termcap:
-                    pyreadline = join(lib_dynload, 'readline.so')
-                    termcap = self.get_termcap_from(pyreadline)
+            if not termcap:
+                pycurses = join(lib_dynload, '_curses.so')
+                termcap = self.get_termcap_from(pycurses)
 
-                if not termcap:
-                    pycurses = join(lib_dynload, '_curses.so')
-                    termcap = self.get_termcap_from(pycurses)
+            if termcap and not self.compiler.find_library_file(lib_dirs, termcap):
+                termcap = ''
 
         if not termcap:
             for name in ['tinfo', 'ncursesw', 'ncurses', 'cursesw', 'curses', 'termcap']:
@@ -180,9 +181,8 @@ class ReadlineExtensionBuilder(build_ext):
             # Build a custom libtinfo (should only happen on readthedocs.org)
             if 'readline' not in ext.libraries:
                 self.build_tinfo()
+                ext.library_dirs.insert(0, 'build/ncurses/lib')
                 ext.libraries.append('tinfo')
-                ext.library_dirs.append('build/ncurses/lib')
-                ext.runtime_library_dirs.append('build/ncurses/lib')
 
         # Prepare the source tree
         if 'readline' not in ext.libraries:
@@ -240,12 +240,13 @@ class ReadlineExtensionBuilder(build_ext):
 
     def build_tinfo(self):
         tarball = 'http://ftp.gnu.org/gnu/ncurses/ncurses-5.9.tar.gz'
+        prefix = abspath(join('build', 'ncurses'))
         stdout = ''
 
         if not self.distribution.verbose:
             stdout = '>%s' % os.devnull
 
-        if not exists(join('build', 'ncurses', 'lib', 'libtinfo.a')):
+        if not exists(join(prefix, 'lib', 'libtinfo.a')):
             os.system("""\
             mkdir -p build
             cd build
@@ -254,8 +255,9 @@ class ReadlineExtensionBuilder(build_ext):
             curl --connect-timeout 30 -s %(tarball)s | tar zx
             mv ncurses-5.9 ncurses
             cd ncurses
-            ./configure --with-shared --with-termlib --without-cxx --without-cxx-binding --without-ada %(stdout)s
-            make %(stdout)s
+            ./configure --prefix=%(prefix)s --with-shared --with-termlib --without-debug --without-cxx --without-cxx-binding --without-ada %(stdout)s
+            cd ncurses
+            make libs %(stdout)s
             """ % locals())
 
 
