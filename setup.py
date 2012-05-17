@@ -150,19 +150,21 @@ class ReadlineExtensionBuilder(build_ext):
         termcap = ''
 
         # Find a termcap library
-        if self.can_inspect_libraries():
+        if not os.environ.get('READTHEDOCS'):
 
-            if 'readline' in ext.libraries:
-                readline = self.compiler.find_library_file(lib_dirs, 'readline')
-                termcap = self.get_termcap_from(readline)
+            if self.can_inspect_libraries():
 
-            if not termcap:
-                pyreadline = join(lib_dynload, 'readline.so')
-                termcap = self.get_termcap_from(pyreadline)
+                if 'readline' in ext.libraries:
+                    readline = self.compiler.find_library_file(lib_dirs, 'readline')
+                    termcap = self.get_termcap_from(readline)
 
-            if not termcap:
-                pycurses = join(lib_dynload, '_curses.so')
-                termcap = self.get_termcap_from(pycurses)
+                if not termcap:
+                    pyreadline = join(lib_dynload, 'readline.so')
+                    termcap = self.get_termcap_from(pyreadline)
+
+                if not termcap:
+                    pycurses = join(lib_dynload, '_curses.so')
+                    termcap = self.get_termcap_from(pycurses)
 
         if not termcap:
             for name in ['tinfo', 'ncursesw', 'ncurses', 'cursesw', 'curses', 'termcap']:
@@ -176,9 +178,12 @@ class ReadlineExtensionBuilder(build_ext):
             log.warn('WARNING: Failed to find a termcap library')
 
             # Build a static libtinfo (should only happen on readthedocs.org)
-            #if 'readline' not in ext.libraries:
-            #    ext.extra_objects.append('build/ncurses/lib/libtinfo.a')
-            #    self.build_static_tinfo()
+            if 'readline' not in ext.libraries:
+                ext.extra_objects.append('build/ncurses/lib/libtinfo.a')
+                self.build_static_tinfo()
+
+        #if os.environ.get('READTHEDOCS'):
+        #    ext.runtime_library_dirs.extend(lib_dirs)
 
         # Prepare the source tree
         if 'readline' not in ext.libraries:
@@ -206,7 +211,6 @@ class ReadlineExtensionBuilder(build_ext):
                 libraries = fp.read()
             for name in ['tinfo', 'ncursesw', 'ncurses', 'cursesw', 'curses', 'termcap']:
                  if 'lib%s.' % name in libraries:
-                    print >>sys.stderr, libraries
                     return name
         return ''
 
