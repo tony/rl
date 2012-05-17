@@ -239,7 +239,7 @@ class ReadlineExtensionBuilder(build_ext):
                 curl --connect-timeout 30 -s %(patches)s/readline62-001 | patch -p0 %(stdout)s
                 curl --connect-timeout 30 -s %(patches)s/readline62-002 | patch -p0 %(stdout)s
             fi
-            ./configure --with-pic %(stdout)s
+            ./configure %(stdout)s
             """ % locals())
 
     def build_tinfo(self):
@@ -259,9 +259,9 @@ class ReadlineExtensionBuilder(build_ext):
             curl --connect-timeout 30 -s %(tarball)s | tar zx
             mv ncurses-5.9 ncurses
             cd ncurses
-            ./configure --prefix=%(prefix)s --with-shared --with-pic --with-termlib %(stdout)s
+            ./configure --prefix=%(prefix)s --with-shared --with-termlib %(stdout)s
             cd ncurses
-            make libs %(stdout)s
+            CFLAGS=-fPIC make libs %(stdout)s
             """ % locals())
 
 
