@@ -176,10 +176,6 @@ class ReadlineExtensionBuilder(build_ext):
                     termcap = name
                     break
 
-        # Simplify testing
-        if READTHEDOCS:
-            termcap = ''
-
         if termcap:
             ext.libraries.append(termcap)
         else:
