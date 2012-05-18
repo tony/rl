@@ -12,7 +12,7 @@ from setuptools.command.build_ext import build_ext
 from distutils.sysconfig import get_config_vars
 from distutils.spawn import find_executable
 from distutils import log
-from os.path import abspath, join, exists
+from os.path import join, exists, abspath
 
 version = '2.3'
 
@@ -184,11 +184,12 @@ class ReadlineExtensionBuilder(build_ext):
             # Build a custom libtinfo
             if READTHEDOCS:
                 if 'readline' not in ext.libraries:
-                    lib_dir = abspath(join('build', 'ncurses', 'lib'))
-                    ext.library_dirs.insert(0, lib_dir)
-                    ext.runtime_library_dirs.insert(0, lib_dir)
+                    prefix = abspath(join('build', 'ncurses'))
+                    self.build_tinfo(prefix)
+                    libdir = join(prefix, 'lib')
+                    ext.library_dirs.insert(0, libdir)
+                    ext.runtime_library_dirs.insert(0, libdir)
                     ext.libraries.append('tinfo')
-                    self.build_tinfo()
 
         # Prepare the source tree
         if 'readline' not in ext.libraries:
@@ -244,9 +245,8 @@ class ReadlineExtensionBuilder(build_ext):
             ./configure %(stdout)s
             """ % locals())
 
-    def build_tinfo(self):
+    def build_tinfo(self, prefix):
         tarball = 'http://ftp.gnu.org/gnu/ncurses/ncurses-5.9.tar.gz'
-        prefix = abspath(join('build', 'ncurses'))
         stdout = ''
 
         if not self.distribution.verbose:
