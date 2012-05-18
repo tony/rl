@@ -265,7 +265,7 @@ class ReadlineExtensionBuilder(build_ext):
             curl --connect-timeout 30 -s %(tarball)s | tar zx
             mv ncurses-5.9 ncurses
             cd ncurses
-            ./configure --prefix=%(prefix)s --with-shared --with-termlib %(stdout)s
+            ./configure --prefix=%(prefix)s --with-shared --with-termlib --without-debug %(stdout)s
             cd ncurses
             make libs %(stdout)s
             """ % locals())
