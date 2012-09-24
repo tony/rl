@@ -9,12 +9,12 @@ import re
 
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
-from distutils.sysconfig import get_config_vars
+from distutils.sysconfig import get_config_var
 from distutils.spawn import find_executable
 from distutils import log
 from os.path import join, exists, abspath
 
-version = '2.3'
+version = '2.4'
 
 READTHEDOCS = (os.environ.get('READTHEDOCS') == 'True')
 
@@ -29,7 +29,12 @@ class ReadlineExtension(Extension):
 
     def __init__(self, name):
         # Describe the extension
-        sources = ['rl/readline.c', 'rl/stringarray.c', 'rl/unicode.c', 'rl/iterator.c']
+        sources = [
+            'rl/readline.c',
+            'rl/stringarray.c',
+            'rl/unicode.c',
+            'rl/iterator.c',
+        ]
         libraries = ['readline']
         Extension.__init__(self, name, sources, libraries=libraries)
 
@@ -72,20 +77,20 @@ class ReadlineExtension(Extension):
         return True
 
     def use_include_dirs(self):
-        cppflags, srcdir = get_config_vars('CPPFLAGS', 'srcdir')
+        cppflags = get_config_var('CPPFLAGS')
 
         for match in re.finditer(r'-I\s*(\S+)', cppflags):
-            if match.group(1) not in ['.', 'Include', '%s/Include' % srcdir]:
+            if match.group(1) not in ['.', 'Include', './Include']:
                 self.include_dirs.append(match.group(1))
 
     def use_library_dirs(self):
-        ldflags, = get_config_vars('LDFLAGS')
+        ldflags = get_config_var('LDFLAGS')
 
         for match in re.finditer(r'-L\s*(\S+)', ldflags):
             self.library_dirs.append(match.group(1))
 
     def suppress_warnings(self):
-        cflags, = get_config_vars('CFLAGS')
+        cflags = get_config_var('CFLAGS')
         cflags = cflags.split()
 
         # -Wno-all is not supported by gcc < 4.2
@@ -274,6 +279,7 @@ setup(name='rl',
                        open('CHANGES.txt').read(),
       classifiers=[
           'Development Status :: 5 - Production/Stable',
+          'Intended Audience :: Developers',
           'License :: OSI Approved :: GNU General Public License (GPL)',
           'License :: OSI Approved :: Python Software Foundation License',
           'Operating System :: MacOS :: MacOS X',

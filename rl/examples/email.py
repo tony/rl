@@ -33,6 +33,11 @@ def complete_email(text):
 
 
 def main():
+    from rl.utils import DEFAULT_DELIMS
+
+    # Configure word break characters
+    completer.word_break_characters = DEFAULT_DELIMS.replace('-', '')
+
     # Configure special prefixes
     completer.special_prefixes = '@'
 
@@ -42,8 +47,12 @@ def main():
     # Enable TAB completion
     completer.parse_and_bind('TAB: complete')
 
-    email = raw_input('email> ')
-    print 'You typed:', email
+    try:
+        email = raw_input('email> ')
+    except (EOFError, KeyboardInterrupt):
+        print # Newline
+    else:
+        print 'You typed:', email.strip()
 
 
 if __name__ == '__main__':

@@ -1,7 +1,14 @@
 Changelog
 =========
 
-2.3 - Unreleased
+2.4 - Unreleased
+----------------
+
+- Update to Python 3.3 Unicode C-API.
+  [stefan]
+
+
+2.3 - 2012-07-18
 ----------------
 
 - Implement history iterators in C instead of relying on
@@ -10,6 +17,7 @@ Changelog
 
 - Raise a more informative error when history slicing is attempted.
   [stefan]
+
 
 2.2 - 2012-05-10
 ----------------
